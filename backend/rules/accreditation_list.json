@@ -1,0 +1,23 @@
+{
+  "approved_accreditation_types": [
+    {
+      "code": "ACEN",
+      "name": "Accreditation Commission for Education in Nursing",
+      "programs": ["LPN", "ADN", "BSN", "MSN", "DNP"],
+      "recognized_by": ["US Department of Education", "CHEA"]
+    },
+    {
+      "code": "CCNE",
+      "name": "Commission on Collegiate Nursing Education",
+      "programs": ["BSN", "MSN", "DNP"],
+      "recognized_by": ["US Department of Education"]
+    },
+    {
+      "code": "CNEA",
+      "name": "Commission for Nursing Education Accreditation",
+      "programs": ["LPN", "ADN", "BSN", "MSN", "DNP"],
+      "recognized_by": ["NLN"]
+    }
+  ],
+  "notes": "Mississippi Board of Nursing recognizes ACEN, CCNE, and CNEA as approved nursing program accreditors."
+}

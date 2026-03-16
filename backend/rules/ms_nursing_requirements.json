@@ -1,0 +1,128 @@
+{
+  "program_requirements": {
+    "LPN": {
+      "full_name": "Licensed Practical Nursing",
+      "minimum_credit_hours": 40,
+      "typical_credit_hours": 48,
+      "typical_duration_terms": 3,
+      "max_reasonable_duration_terms": 6,
+      "min_reasonable_duration_terms": 2,
+      "required_course_categories": [
+        "body_structure_function",
+        "nursing_fundamentals",
+        "pharmacology",
+        "medical_surgical",
+        "clinical_practicum",
+        "mental_health"
+      ],
+      "required_course_keywords": {
+        "body_structure_function": ["anatomy", "physiology", "body structure", "a&p"],
+        "nursing_fundamentals": ["fundamentals", "fund of nursing", "nursing fundamentals", "basic nursing"],
+        "pharmacology": ["pharmacology", "iv therapy", "dosage"],
+        "medical_surgical": ["med-surg", "medical surgical", "med/surg", "adult health"],
+        "clinical_practicum": ["clinical", "practicum", "lab", "clinica"],
+        "mental_health": ["mental health", "psychiatric", "psych nursing"]
+      },
+      "minimum_passing_grade": "D",
+      "passing_grades": ["A", "B", "C", "P", "S"],
+      "failing_grades": ["F", "WF", "FA"],
+      "warning_grades": ["D", "W", "I", "IP"]
+    },
+    "ADN": {
+      "full_name": "Associate Degree Nursing",
+      "minimum_credit_hours": 60,
+      "typical_credit_hours": 72,
+      "typical_duration_terms": 5,
+      "max_reasonable_duration_terms": 8,
+      "min_reasonable_duration_terms": 3,
+      "required_course_categories": [
+        "anatomy_physiology",
+        "nursing_fundamentals",
+        "pharmacology",
+        "medical_surgical",
+        "clinical_practicum",
+        "mental_health",
+        "maternal_child",
+        "microbiology"
+      ],
+      "required_course_keywords": {
+        "anatomy_physiology": ["anatomy", "physiology", "a&p"],
+        "nursing_fundamentals": ["fundamentals", "fund of nursing", "nursing fundamentals"],
+        "pharmacology": ["pharmacology", "iv therapy", "dosage"],
+        "medical_surgical": ["med-surg", "medical surgical", "med/surg", "adult health", "care of the adult"],
+        "clinical_practicum": ["clinical", "practicum", "lab"],
+        "mental_health": ["mental health", "psychiatric", "psych"],
+        "maternal_child": ["maternal", "child", "pediatric", "obstetric", "ob/gyn", "family"],
+        "microbiology": ["microbiology", "micro"]
+      },
+      "minimum_passing_grade": "D",
+      "passing_grades": ["A", "B", "C", "P", "S"],
+      "failing_grades": ["F", "WF", "FA"],
+      "warning_grades": ["D", "W", "I", "IP"]
+    },
+    "BSN": {
+      "full_name": "Bachelor of Science in Nursing",
+      "minimum_credit_hours": 120,
+      "typical_credit_hours": 128,
+      "typical_duration_terms": 8,
+      "max_reasonable_duration_terms": 14,
+      "min_reasonable_duration_terms": 4,
+      "required_course_categories": [
+        "anatomy_physiology",
+        "nursing_fundamentals",
+        "pharmacology",
+        "medical_surgical",
+        "clinical_practicum",
+        "mental_health",
+        "maternal_child",
+        "community_health",
+        "leadership",
+        "research"
+      ],
+      "required_course_keywords": {
+        "anatomy_physiology": ["anatomy", "physiology", "a&p"],
+        "nursing_fundamentals": ["fundamentals", "health assessment", "basic nursing"],
+        "pharmacology": ["pharmacology", "pharmacotherapeutics"],
+        "medical_surgical": ["med-surg", "medical surgical", "health & illness", "adult health"],
+        "clinical_practicum": ["clinical", "practicum", "capstone"],
+        "mental_health": ["mental health", "psychiatric", "behavioral"],
+        "maternal_child": ["maternal", "child", "pediatric", "family"],
+        "community_health": ["community", "population", "public health"],
+        "leadership": ["leadership", "management", "professional role"],
+        "research": ["research", "evidence-based", "scholarship", "ebp"]
+      },
+      "minimum_passing_grade": "D",
+      "passing_grades": ["A", "B", "C", "P", "S"],
+      "failing_grades": ["F", "WF", "FA"],
+      "warning_grades": ["D", "W", "I", "IP"]
+    },
+    "MSN": {
+      "full_name": "Master of Science in Nursing",
+      "minimum_credit_hours": 36,
+      "typical_credit_hours": 45,
+      "typical_duration_terms": 6,
+      "max_reasonable_duration_terms": 12,
+      "min_reasonable_duration_terms": 3,
+      "required_course_categories": [
+        "advanced_pathophysiology",
+        "advanced_pharmacology",
+        "advanced_health_assessment",
+        "clinical_practicum",
+        "research",
+        "role_development"
+      ],
+      "required_course_keywords": {
+        "advanced_pathophysiology": ["pathophysiology", "advanced physiology"],
+        "advanced_pharmacology": ["pharmacotherapeutics", "advanced pharmacology", "clinical pharmacology"],
+        "advanced_health_assessment": ["health assessment", "advanced assessment"],
+        "clinical_practicum": ["practicum", "clinical", "residency"],
+        "research": ["research", "evidence-based", "quality improvement"],
+        "role_development": ["role development", "role enactment", "leadership"]
+      },
+      "minimum_passing_grade": "C",
+      "passing_grades": ["A", "B", "C", "P", "S"],
+      "failing_grades": ["D", "F", "WF", "FA"],
+      "warning_grades": ["W", "I", "IP"]
+    }
+  }
+}

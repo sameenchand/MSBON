@@ -1,0 +1,172 @@
+{
+  "mississippi_nursing_schools": [
+    {
+      "name": "Northwest Mississippi Community College",
+      "aliases": ["Northwest MS CC", "NWCC", "Northwest Mississippi CC"],
+      "city": "Senatobia",
+      "programs": ["LPN", "ADN"],
+      "accreditation": "ACEN"
+    },
+    {
+      "name": "Northeast Mississippi Community College",
+      "aliases": ["Northeast MS CC", "NEMCC"],
+      "city": "Booneville",
+      "programs": ["LPN", "ADN"],
+      "accreditation": "ACEN"
+    },
+    {
+      "name": "Copiah-Lincoln Community College",
+      "aliases": ["Co-Lin", "CLCC", "Copiah Lincoln CC"],
+      "city": "Wesson",
+      "programs": ["LPN", "ADN"],
+      "accreditation": "ACEN"
+    },
+    {
+      "name": "Itawamba Community College",
+      "aliases": ["ICC", "Itawamba CC"],
+      "city": "Fulton",
+      "programs": ["LPN", "ADN"],
+      "accreditation": "ACEN"
+    },
+    {
+      "name": "Holmes Community College",
+      "aliases": ["Holmes CC", "HCC"],
+      "city": "Goodman",
+      "programs": ["LPN", "ADN"],
+      "accreditation": "ACEN"
+    },
+    {
+      "name": "Pearl River Community College",
+      "aliases": ["PRCC", "Pearl River CC"],
+      "city": "Poplarville",
+      "programs": ["LPN", "ADN"],
+      "accreditation": "ACEN"
+    },
+    {
+      "name": "Hinds Community College",
+      "aliases": ["Hinds CC", "HCC-Hinds"],
+      "city": "Raymond",
+      "programs": ["LPN", "ADN"],
+      "accreditation": "ACEN"
+    },
+    {
+      "name": "Meridian Community College",
+      "aliases": ["MCC", "Meridian CC"],
+      "city": "Meridian",
+      "programs": ["LPN", "ADN"],
+      "accreditation": "ACEN"
+    },
+    {
+      "name": "Mississippi Gulf Coast Community College",
+      "aliases": ["MGCCC", "Gulf Coast CC"],
+      "city": "Perkinston",
+      "programs": ["LPN", "ADN"],
+      "accreditation": "ACEN"
+    },
+    {
+      "name": "Jones College",
+      "aliases": ["Jones County JC", "JCJC"],
+      "city": "Ellisville",
+      "programs": ["LPN", "ADN"],
+      "accreditation": "ACEN"
+    },
+    {
+      "name": "East Central Community College",
+      "aliases": ["ECCC", "East Central CC"],
+      "city": "Decatur",
+      "programs": ["LPN", "ADN"],
+      "accreditation": "ACEN"
+    },
+    {
+      "name": "East Mississippi Community College",
+      "aliases": ["EMCC", "East MS CC"],
+      "city": "Scooba",
+      "programs": ["LPN", "ADN"],
+      "accreditation": "ACEN"
+    },
+    {
+      "name": "Coahoma Community College",
+      "aliases": ["CCC", "Coahoma CC"],
+      "city": "Clarksdale",
+      "programs": ["LPN", "ADN"],
+      "accreditation": "ACEN"
+    },
+    {
+      "name": "Southwest Mississippi Community College",
+      "aliases": ["SMCC", "Southwest MS CC"],
+      "city": "Summit",
+      "programs": ["LPN", "ADN"],
+      "accreditation": "ACEN"
+    },
+    {
+      "name": "Mississippi Delta Community College",
+      "aliases": ["MDCC", "MS Delta CC"],
+      "city": "Moorhead",
+      "programs": ["LPN", "ADN"],
+      "accreditation": "ACEN"
+    },
+    {
+      "name": "University of Mississippi Medical Center",
+      "aliases": ["UMMC", "Ole Miss Medical Center", "UM Medical Center"],
+      "city": "Jackson",
+      "programs": ["BSN", "MSN", "DNP"],
+      "accreditation": "CCNE"
+    },
+    {
+      "name": "Mississippi University for Women",
+      "aliases": ["MUW", "The W"],
+      "city": "Columbus",
+      "programs": ["BSN", "MSN", "DNP"],
+      "accreditation": "CCNE"
+    },
+    {
+      "name": "University of Southern Mississippi",
+      "aliases": ["USM", "Southern Miss"],
+      "city": "Hattiesburg",
+      "programs": ["BSN", "MSN", "DNP"],
+      "accreditation": "CCNE"
+    },
+    {
+      "name": "Mississippi College",
+      "aliases": ["MC"],
+      "city": "Clinton",
+      "programs": ["BSN", "MSN"],
+      "accreditation": "CCNE"
+    },
+    {
+      "name": "Delta State University",
+      "aliases": ["DSU", "Delta State"],
+      "city": "Cleveland",
+      "programs": ["BSN", "MSN"],
+      "accreditation": "ACEN"
+    },
+    {
+      "name": "Alcorn State University",
+      "aliases": ["ASU", "Alcorn"],
+      "city": "Lorman",
+      "programs": ["BSN", "MSN"],
+      "accreditation": "ACEN"
+    },
+    {
+      "name": "William Carey University",
+      "aliases": ["WCU", "William Carey"],
+      "city": "Hattiesburg",
+      "programs": ["BSN", "MSN"],
+      "accreditation": "CCNE"
+    },
+    {
+      "name": "Jackson State University",
+      "aliases": ["JSU", "Jackson State"],
+      "city": "Jackson",
+      "programs": ["BSN"],
+      "accreditation": "ACEN"
+    },
+    {
+      "name": "Belhaven University",
+      "aliases": ["Belhaven"],
+      "city": "Jackson",
+      "programs": ["BSN"],
+      "accreditation": "CCNE"
+    }
+  ]
+}

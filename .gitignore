@@ -1,0 +1,58 @@
+# Project reference documents (not for public repo)
+MS Innovation Hub Onboarding and Best Practices Guide v1.1 1.pdf
+MSBON anonymized transcripts.pdf
+MSBON Fraud-Sensitive Transcript Verification Scope.docx
+CLAUDE.md
+
+# Plan files
+.claude/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Node / React
+node_modules/
+frontend/dist/
+frontend/build/
+.env
+.env.local
+.env.*.local
+
+# CDK
+infrastructure/cdk.out/
+*.js.map
+*.d.ts
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# AWS
+.aws-sam/
+samconfig.toml
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Logs
+*.log

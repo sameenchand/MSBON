@@ -1,0 +1,54 @@
+{
+  "fraud_indicators": {
+    "compressed_timeline": {
+      "description": "Program completed in suspiciously short time relative to typical duration",
+      "severity": "HIGH",
+      "threshold_ratio": 0.5,
+      "notes": "Flag if program completed in less than 50% of typical duration"
+    },
+    "excessive_transfer_credits": {
+      "description": "Unusually high proportion of credits transferred from other institutions",
+      "severity": "MEDIUM",
+      "threshold_percentage": 75,
+      "notes": "Flag if >75% of total credits are transfers"
+    },
+    "inconsistent_enrollment": {
+      "description": "Unexplained gaps, overlaps, or out-of-sequence coursework",
+      "severity": "MEDIUM",
+      "notes": "Look for courses taken out of prerequisite order or simultaneous enrollment at multiple institutions"
+    },
+    "gpa_discrepancy": {
+      "description": "Reported GPA does not match calculated GPA from individual course grades",
+      "severity": "MEDIUM",
+      "tolerance": 0.3,
+      "notes": "Allow 0.3 tolerance for rounding and transfer credit effects"
+    },
+    "duplicate_courses": {
+      "description": "Same course appears multiple times without clear retake justification",
+      "severity": "LOW",
+      "notes": "Some retakes are legitimate (grade replacement); flag only suspicious patterns"
+    },
+    "unrecognized_institution": {
+      "description": "Issuing institution is not in the approved list of Mississippi nursing schools",
+      "severity": "HIGH",
+      "notes": "May be legitimate out-of-state school for endorsement applicants - requires manual review"
+    },
+    "missing_graduation_confirmation": {
+      "description": "No degree conferral, graduation date, or completion statement on transcript",
+      "severity": "HIGH",
+      "notes": "All transcripts should explicitly confirm program completion"
+    },
+    "in_progress_courses": {
+      "description": "Transcript shows courses still in progress at time of application",
+      "severity": "MEDIUM",
+      "notes": "Applicant may not have fully completed their program"
+    }
+  },
+  "known_fraud_patterns": [
+    "Transcripts from institutions under federal investigation (e.g., Operation Nightingale schools)",
+    "Identical transcripts submitted by multiple applicants",
+    "Transcripts showing clinical hours at facilities that do not exist",
+    "Program completion certificates without corresponding transcript coursework",
+    "Transcripts with formatting inconsistencies suggesting document alteration"
+  ]
+}
