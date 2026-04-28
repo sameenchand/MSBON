@@ -69,6 +69,21 @@ APPROVED_SCHOOL_NAMES = [
     s["name"].lower() if isinstance(s, dict) else s.lower() for s in APPROVED_SCHOOLS
 ]
 
+# Aliases (e.g. "Hinds CC", "UMMC") and accreditation lookup built from the same source
+APPROVED_SCHOOL_ALIASES: list[str] = []
+SCHOOL_ACCREDITATION_MAP: dict[str, str] = {}
+for _s in APPROVED_SCHOOLS:
+    if isinstance(_s, dict):
+        _name = _s.get("name", "").lower()
+        _accred = _s.get("accreditation") or ""
+        if _name and _accred:
+            SCHOOL_ACCREDITATION_MAP[_name] = _accred
+        for _alias in _s.get("aliases", []):
+            _alias_lower = _alias.lower()
+            APPROVED_SCHOOL_ALIASES.append(_alias_lower)
+            if _accred:
+                SCHOOL_ACCREDITATION_MAP[_alias_lower] = _accred
+
 # ---------------------------------------------------------------------------
 # Program hour requirements (approximate ranges)
 # ---------------------------------------------------------------------------
@@ -562,8 +577,9 @@ def check_school_accredited(extracted_data: dict) -> dict:
 
     normalized = _normalize(school_name)
 
-    for approved in APPROVED_SCHOOL_NAMES:
-        if normalized in approved or approved in normalized:
+    # Check canonical names and all aliases (e.g. "Hinds CC", "UMMC")
+    for known in APPROVED_SCHOOL_NAMES + APPROVED_SCHOOL_ALIASES:
+        if normalized in known or known in normalized:
             return _result(
                 "SCHOOL_ACCREDITED",
                 "PASS",
@@ -582,37 +598,70 @@ def check_school_accredited(extracted_data: dict) -> dict:
 
 
 def check_accreditation_type(extracted_data: dict) -> dict:
-    """Cross-reference accreditation type (ACEN, CCNE, etc.)."""
-    accreditation = extracted_data.get("accreditation") or extracted_data.get("accreditation_type")
+    """Cross-reference accreditation type (ACEN, CCNE, etc.).
 
-    if not accreditation:
+    Primary strategy: look up the school in the approved reference data — every
+    approved Mississippi school has its accreditor recorded there, so this works
+    even when the transcript does not print the accreditation body.
+    Fallback: scan extracted text fields for explicit accreditation keywords.
+    """
+    school_name = (
+        extracted_data.get("school_name")
+        or extracted_data.get("institution")
+        or extracted_data.get("institution_name")
+        or ""
+    )
+
+    # Primary: look up accreditation from reference data
+    if school_name:
+        norm = _normalize(school_name)
+        for known_name, accred in SCHOOL_ACCREDITATION_MAP.items():
+            if norm in known_name or known_name in norm:
+                return _result(
+                    "ACCREDITATION_TYPE",
+                    "PASS",
+                    f"'{school_name}' is accredited by {accred} per the MSBN approved school reference data.",
+                    "approved_schools_reference",
+                    "HIGH",
+                )
+
+    # Fallback: transcript explicitly states accreditation
+    accreditation = (extracted_data.get("accreditation") or extracted_data.get("accreditation_type") or "").strip()
+    if accreditation:
+        recognized_types = {"ACEN", "CCNE", "CNEA", "ABHES", "SACSCOC", "SACS", "COE", "NLN"}
+        for rec in recognized_types:
+            if rec in accreditation.upper():
+                return _result(
+                    "ACCREDITATION_TYPE",
+                    "PASS",
+                    f"Accreditation type stated on transcript: {accreditation}.",
+                    "accreditation",
+                    "MEDIUM",
+                )
         return _result(
             "ACCREDITATION_TYPE",
-            "UNABLE_TO_DETERMINE",
-            "Accreditation type not found in extracted data.",
+            "FLAG",
+            f"Accreditation type '{accreditation}' is not a recognized nursing program accreditor.",
             "accreditation",
-            "LOW",
+            "MEDIUM",
         )
 
-    recognized_types = {"ACEN", "CCNE", "CNEA", "ABHES", "SACSCOC", "SACS", "COE", "NLN"}
-    accred_upper = accreditation.upper().strip()
-
-    for rec in recognized_types:
-        if rec in accred_upper:
-            return _result(
-                "ACCREDITATION_TYPE",
-                "PASS",
-                f"Recognized accreditation type found: {accreditation}.",
-                "accreditation",
-                "HIGH",
-            )
+    # School not in reference data and no accreditation stated
+    if school_name:
+        return _result(
+            "ACCREDITATION_TYPE",
+            "FLAG",
+            f"'{school_name}' is not in the MSBN approved school reference list — accreditation cannot be verified from reference data or transcript.",
+            "school_name / approved_schools_reference",
+            "MEDIUM",
+        )
 
     return _result(
         "ACCREDITATION_TYPE",
-        "FLAG",
-        f"Accreditation type '{accreditation}' is not a recognized nursing program accreditor.",
-        "accreditation",
-        "MEDIUM",
+        "UNABLE_TO_DETERMINE",
+        "School name not found; accreditation cannot be determined.",
+        "school_name",
+        "LOW",
     )
 
 
@@ -707,71 +756,98 @@ def check_compressed_timeline(extracted_data: dict) -> dict:
 
 
 def check_consistent_enrollment(extracted_data: dict) -> dict:
-    """Check for unexplained gaps or suspicious overlaps in enrollment."""
-    semesters = extracted_data.get("semesters") or extracted_data.get("terms") or extracted_data.get("enrollment_periods")
+    """Check for unexplained gaps or suspicious overlaps in enrollment.
 
-    if not semesters or not isinstance(semesters, list):
+    Uses enrollment_terms (list of term name strings) from the extraction schema,
+    parsing each with _parse_date() to build a chronological timeline.
+    Falls back to structured semester dicts if available.
+    """
+    # Primary: enrollment_terms list of strings from extraction schema
+    enrollment_terms = extracted_data.get("enrollment_terms") or []
+
+    if isinstance(enrollment_terms, list) and len(enrollment_terms) >= 2:
+        dated: list[tuple[str, datetime]] = []
+        for term in enrollment_terms:
+            parsed = _parse_date(str(term))
+            if parsed:
+                dated.append((str(term), parsed))
+
+        if len(dated) < 2:
+            return _result(
+                "CONSISTENT_ENROLLMENT",
+                "UNABLE_TO_DETERMINE",
+                f"Found {len(enrollment_terms)} enrollment term(s) but could not parse enough dates to check consistency.",
+                "enrollment_terms",
+                "LOW",
+            )
+
+        dated.sort(key=lambda x: x[1])
+        gaps = []
+        for i in range(1, len(dated)):
+            prev_name, prev_date = dated[i - 1]
+            curr_name, curr_date = dated[i]
+            gap_months = (curr_date.year - prev_date.year) * 12 + (curr_date.month - prev_date.month)
+            if gap_months > 18:
+                gaps.append(f"{prev_name} → {curr_name} ({gap_months} months)")
+
+        if gaps:
+            return _result(
+                "CONSISTENT_ENROLLMENT",
+                "FLAG",
+                f"Unexplained enrollment gap(s) detected: {'; '.join(gaps)}. Gaps over 18 months warrant review.",
+                "enrollment_terms",
+                "MEDIUM",
+            )
+
         return _result(
             "CONSISTENT_ENROLLMENT",
-            "UNABLE_TO_DETERMINE",
-            "No semester/term data available to check enrollment consistency.",
-            "semesters",
-            "LOW",
-        )
-
-    # Try to extract and sort dates from semester data
-    dated_terms = []
-    for sem in semesters:
-        term_name = sem.get("name") or sem.get("term") or sem.get("semester") or ""
-        start = _parse_date(sem.get("start_date") or "")
-        end = _parse_date(sem.get("end_date") or "")
-        if start:
-            dated_terms.append({"name": term_name, "start": start, "end": end})
-
-    if len(dated_terms) < 2:
-        return _result(
-            "CONSISTENT_ENROLLMENT",
-            "UNABLE_TO_DETERMINE",
-            "Insufficient semester date information to check enrollment consistency.",
-            "semesters",
-            "LOW",
-        )
-
-    dated_terms.sort(key=lambda x: x["start"])
-
-    gaps = []
-    overlaps = []
-    for i in range(1, len(dated_terms)):
-        prev = dated_terms[i - 1]
-        curr = dated_terms[i]
-        if prev["end"] and curr["start"]:
-            gap_days = (curr["start"] - prev["end"]).days
-            if gap_days > 180:  # More than ~6 months gap
-                gaps.append(f"{prev['name']} -> {curr['name']} ({gap_days} days)")
-            elif gap_days < -30:  # Significant overlap
-                overlaps.append(f"{prev['name']} and {curr['name']} overlap by {abs(gap_days)} days")
-
-    issues = []
-    if gaps:
-        issues.append(f"Large enrollment gaps: {'; '.join(gaps)}")
-    if overlaps:
-        issues.append(f"Suspicious overlaps: {'; '.join(overlaps)}")
-
-    if issues:
-        return _result(
-            "CONSISTENT_ENROLLMENT",
-            "FLAG",
-            " | ".join(issues),
-            "semesters",
+            "PASS",
+            f"Enrollment is consistent across {len(dated)} terms with no unexplained gaps (>{18} months).",
+            "enrollment_terms",
             "MEDIUM",
         )
 
+    # Fallback: structured semester dicts with start/end dates
+    semesters = (
+        extracted_data.get("semesters")
+        or extracted_data.get("terms")
+        or extracted_data.get("enrollment_periods")
+    )
+    if semesters and isinstance(semesters, list):
+        dated_structs = []
+        for sem in semesters:
+            term_name = sem.get("name") or sem.get("term") or sem.get("semester") or ""
+            start = _parse_date(sem.get("start_date") or "")
+            end = _parse_date(sem.get("end_date") or "")
+            if start:
+                dated_structs.append({"name": term_name, "start": start, "end": end})
+
+        if len(dated_structs) >= 2:
+            dated_structs.sort(key=lambda x: x["start"])
+            gaps, overlaps = [], []
+            for i in range(1, len(dated_structs)):
+                prev, curr = dated_structs[i - 1], dated_structs[i]
+                if prev["end"] and curr["start"]:
+                    gap_days = (curr["start"] - prev["end"]).days
+                    if gap_days > 180:
+                        gaps.append(f"{prev['name']} → {curr['name']} ({gap_days} days)")
+                    elif gap_days < -30:
+                        overlaps.append(f"{prev['name']} and {curr['name']} overlap by {abs(gap_days)} days")
+            issues = []
+            if gaps:
+                issues.append(f"Large enrollment gaps: {'; '.join(gaps)}")
+            if overlaps:
+                issues.append(f"Suspicious overlaps: {'; '.join(overlaps)}")
+            if issues:
+                return _result("CONSISTENT_ENROLLMENT", "FLAG", " | ".join(issues), "semesters", "MEDIUM")
+            return _result("CONSISTENT_ENROLLMENT", "PASS", "Enrollment timeline consistent with no major gaps or overlaps.", "semesters", "MEDIUM")
+
     return _result(
         "CONSISTENT_ENROLLMENT",
-        "PASS",
-        "Enrollment timeline appears consistent with no major gaps or overlaps.",
-        "semesters",
-        "MEDIUM",
+        "UNABLE_TO_DETERMINE",
+        "No enrollment term data available to check consistency.",
+        "enrollment_terms",
+        "LOW",
     )
 
 

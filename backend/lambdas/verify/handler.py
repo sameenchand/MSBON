@@ -126,7 +126,11 @@ def _run_pipeline(event: dict) -> dict:
         ).to_dynamo())
         raise
 
-    # 3. Run deterministic rules
+    # 3. Strip raw OCR text — not needed by rules engine or AI analysis, and
+    #    sending 20K chars of OCR to Nova Pro every verification call wastes tokens.
+    extracted_data.pop("raw_text", None)
+
+    # 4. Run deterministic rules
     logger.info("Running deterministic rules")
     rule_results = run_all_rules(_normalize_for_rules(extracted_data))
 
@@ -135,7 +139,7 @@ def _run_pipeline(event: dict) -> dict:
     unable_count = sum(1 for r in rule_results if r["status"] == "UNABLE_TO_DETERMINE")
     logger.info("Rules: %d PASS, %d FLAG, %d UNABLE", pass_count, flag_count, unable_count)
 
-    # 4. AI holistic analysis via Nova Pro
+    # 5. AI holistic analysis via Nova Pro
     logger.info("Running AI analysis via Nova Pro")
     system_prompt, user_prompt = build_verification_prompt(extracted_data, rule_results)
     try:
@@ -167,7 +171,7 @@ def _run_pipeline(event: dict) -> dict:
 
     overall_status, transcript_status = _map_recommendation(recommendation)
 
-    # 5. Save verification result to DynamoDB
+    # 6. Save verification result to DynamoDB
     result = VerificationResult(
         transcript_id=transcript_id,
         overall_status=overall_status,
@@ -179,10 +183,10 @@ def _run_pipeline(event: dict) -> dict:
     logger.info("Saving verification result %s", result.verification_id)
     db.put_verification(result.to_dynamo())
 
-    # 6. Update transcript status
+    # 7. Update transcript status
     db.update_transcript_status(transcript_id, transcript_status)
 
-    # 7. Log audit entry
+    # 8. Log audit entry
     db.put_audit_entry(AuditEntry(
         transcript_id=transcript_id,
         actor="ai",

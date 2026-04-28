@@ -64,6 +64,7 @@ export default function VerificationDetail() {
   const [_extractedData] = useState<ExtractedTranscript | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [rerunning, setRerunning] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchData = (isInitial = false) => {
@@ -83,6 +84,20 @@ export default function VerificationDetail() {
       })
       .catch((e) => setError(e.message))
       .finally(() => { if (isInitial) setLoading(false); });
+  };
+
+  const handleRerun = () => {
+    if (!id || rerunning) return;
+    setRerunning(true);
+    setVerification(null);
+    api.triggerVerification(id)
+      .then(() => {
+        if (pollRef.current) clearInterval(pollRef.current);
+        pollRef.current = setInterval(() => fetchData(false), 5000);
+        fetchData(false);
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setRerunning(false));
   };
 
   useEffect(() => {
@@ -121,6 +136,15 @@ export default function VerificationDetail() {
           >
             Start Review
           </Link>
+          {!PROCESSING_STATUSES.has(transcript.status) && transcript.status !== 'APPROVED' && (
+            <button
+              onClick={handleRerun}
+              disabled={rerunning}
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+            >
+              {rerunning ? 'Starting…' : 'Re-run Verification'}
+            </button>
+          )}
           <Link
             to={`/transcript/${id}/audit`}
             className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"

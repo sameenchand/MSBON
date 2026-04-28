@@ -104,6 +104,19 @@ Key extraction rules:
 - earned_credit_hours: look for "Total Earned Credits" or similar — this may differ from attempted.
 - Dates in YYYY-MM-DD format. Terms as written (e.g. "2018 Fall Session", "Spring 2019").
 
+EXAMPLE — correct term-course assignment (the most critical part):
+Input OCR: "2022 Fall Session | PNV 1115 Practical Nursing Foundations B 5 | PNV 1126 Nursing Pharmacology A 6 | Good Standing | 2023 Spring Session | PNV 1212 Practical Nursing II B 5 | PNV 1216 Advanced Practical Nursing F.S. A(R) 6"
+Correct partial output:
+  enrollment_terms: ["2022 Fall Session", "2023 Spring Session"]
+  academic_standing_per_term: [{{"term": "2022 Fall Session", "standing": "Good Standing"}}]
+  courses: [
+    {{"name": "Practical Nursing Foundations", "number": "PNV 1115", "credits": 5, "grade": "B", "term": "2022 Fall Session", "repeated": false}},
+    {{"name": "Nursing Pharmacology", "number": "PNV 1126", "credits": 6, "grade": "A", "term": "2022 Fall Session", "repeated": false}},
+    {{"name": "Practical Nursing II", "number": "PNV 1212", "credits": 5, "grade": "B", "term": "2023 Spring Session", "repeated": false}},
+    {{"name": "Advanced Practical Nursing F.S.", "number": "PNV 1216", "credits": 6, "grade": "A(R)", "term": "2023 Spring Session", "repeated": true}}
+  ]
+Note: PNV 1216 belongs to 2023 Spring — it appears AFTER the Spring header, not the Fall header.
+
 Transcript text (LINE blocks followed by structured TABLE data):
 {raw_text}"""
 
@@ -279,8 +292,9 @@ def handler(event, context):
         logger.info("Sending text to Bedrock Nova Pro for structured extraction")
         extracted_data = _parse_with_bedrock(raw_text)
 
-        # Attach raw text and page count to the extracted data
-        extracted_data["raw_text"] = raw_text
+        # Attach page count only — raw_text is excluded from the saved JSON to
+        # keep S3 object size small and avoid sending 20K chars of OCR text to
+        # every downstream Lambda that loads this extraction result.
         extracted_data["page_count"] = page_count
 
         # Step 4: Save extracted data to S3

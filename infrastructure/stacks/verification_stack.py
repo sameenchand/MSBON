@@ -55,10 +55,10 @@ class VerificationStack(Stack):
         )
         textract_policy = iam.PolicyStatement(
             actions=[
+                "textract:StartDocumentAnalysis",
+                "textract:GetDocumentAnalysis",
                 "textract:DetectDocumentText",
                 "textract:AnalyzeDocument",
-                "textract:StartDocumentTextDetection",
-                "textract:GetDocumentTextDetection",
             ],
             resources=["*"],
         )
