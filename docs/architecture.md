@@ -109,7 +109,7 @@ All objects are organized by prefix:
 | Prefix | Contents |
 |--------|----------|
 | `uploads/` | Original PDF transcripts |
-| `extracted/` | Nova Lite structured extraction JSON |
+| `extracted/` | Nova Pro structured extraction JSON |
 | `verifications/` | Rule engine + Nova Pro verification JSON |
 | `reports/` | Final verification reports |
 
@@ -160,8 +160,8 @@ Each rule returns: `ruleId`, `status` (PASS / FLAG / UNABLE_TO_DETERMINE), `expl
 
 | Model | Use | Reason |
 |-------|-----|--------|
-| Nova Lite | Structured data extraction, report generation | Fast, cost-effective for JSON extraction tasks |
-| Nova Pro | Holistic transcript analysis | More capable reasoning for complex fraud/anomaly detection |
+| Nova Pro | Structured data extraction, holistic fraud analysis | High accuracy required — extraction errors propagate through all 18 rules |
+| Nova Lite | Verification report generation | Fast and cost-effective for structured JSON assembly |
 
 All AI outputs include source citations and plain-language explanations. No AI output results in an automated decision.
 
@@ -174,17 +174,17 @@ All AI outputs include source citations and plain-language explanations. No AI o
 4. Upload Lambda starts Step Functions Express workflow
 5. Extract Lambda:
    a. Calls Textract async (polls until complete)
-   b. Sends OCR text to Nova Lite
+   b. Sends OCR text to Nova Pro
    c. Saves structured JSON to S3
 6. Verify Lambda:
    a. Loads extraction from S3
-   b. Runs 13 deterministic rules
+   b. Runs 18 deterministic rules
    c. Calls Nova Pro for holistic analysis
    d. Saves verification result to DynamoDB + S3
 7. Report Lambda:
    a. Assembles final report
    b. Saves to S3
-   c. Updates transcript status → REVIEW_REQUIRED
+   c. Updates transcript status → COMPLETE
 8. Staff reviews findings in the UI
 9. Staff submits decision → Review Lambda records it
 10. All actions logged to Audit table

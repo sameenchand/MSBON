@@ -37,7 +37,7 @@ The following are excluded via `.gitignore` and are not present in any commit:
 
 ## Data Governance Principles Applied
 
-1. **Minimum data collection** — The system extracts only what is needed for the 13 verification rules
+1. **Minimum data collection** — The system extracts only what is needed for the 18 verification rules
 2. **Audit trail** — Every action on a transcript is logged with actor, action, and timestamp
 3. **No automated decisions** — Extracted data informs human review; it does not drive automated licensing outcomes
 4. **No external transmission** — In this PoC, extracted data stays within the AWS account and is never sent to external systems (NURSYS, NCSBN, schools, etc.)

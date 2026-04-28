@@ -79,7 +79,7 @@ MSBON/
 ├── backend/
 │   ├── lambdas/
 │   │   ├── upload/          # Transcript upload + presigned URL generation
-│   │   ├── extract/         # Textract OCR + Nova Lite structured extraction
+│   │   ├── extract/         # Textract OCR + Nova Pro structured extraction
 │   │   ├── verify/          # Rules engine + Nova Pro AI analysis
 │   │   ├── report/          # Verification report generation
 │   │   ├── review/          # Human review actions
@@ -143,7 +143,7 @@ This repository does not include real applicant data. Any data used during devel
 ## Usage
 
 1. Upload a transcript PDF via the **Upload** page
-2. The pipeline runs automatically: Textract OCR → Nova Lite extraction → 13-rule engine → Nova Pro AI analysis
+2. The pipeline runs automatically: Textract OCR → Nova Pro extraction → 18-rule engine → Nova Pro AI analysis
 3. View flagged items, AI analysis summary, and rule-by-rule results on the **Verification Detail** page
 4. Staff review and annotate findings via the **Review** page
 5. All actions are recorded in the **Audit Log**
