@@ -1,10 +1,17 @@
 """Amazon Bedrock client wrapper for Nova models."""
 
 import json
+import logging
+import time
+
 import boto3
+from botocore.exceptions import ClientError
 
 
+logger = logging.getLogger(__name__)
 _bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
+
+_RETRYABLE_CODES = {"ThrottlingException", "ServiceUnavailableException", "ModelTimeoutException"}
 
 # Amazon Nova model IDs
 NOVA_LITE = "amazon.nova-lite-v1:0"
@@ -19,7 +26,11 @@ def invoke_nova(
     max_tokens: int = 4096,
     temperature: float = 0.1,
 ) -> str:
-    """Invoke an Amazon Nova model and return the text response."""
+    """Invoke an Amazon Nova model and return the text response.
+
+    Retries up to 4 times with exponential backoff on throttling or transient
+    service errors (ThrottlingException, ServiceUnavailableException, ModelTimeoutException).
+    """
     messages = [{"role": "user", "content": [{"text": prompt}]}]
 
     body = {
@@ -33,15 +44,28 @@ def invoke_nova(
     if system_prompt:
         body["system"] = [{"text": system_prompt}]
 
-    response = _bedrock.invoke_model(
-        modelId=model_id,
-        contentType="application/json",
-        accept="application/json",
-        body=json.dumps(body),
-    )
-
-    response_body = json.loads(response["body"].read())
-    return response_body["output"]["message"]["content"][0]["text"]
+    max_attempts = 4
+    for attempt in range(max_attempts):
+        try:
+            response = _bedrock.invoke_model(
+                modelId=model_id,
+                contentType="application/json",
+                accept="application/json",
+                body=json.dumps(body),
+            )
+            response_body = json.loads(response["body"].read())
+            return response_body["output"]["message"]["content"][0]["text"]
+        except ClientError as e:
+            code = e.response["Error"]["Code"]
+            if code in _RETRYABLE_CODES and attempt < max_attempts - 1:
+                wait = 2 ** attempt  # 1s, 2s, 4s
+                logger.warning(
+                    "Bedrock %s (attempt %d/%d), retrying in %ds",
+                    code, attempt + 1, max_attempts, wait,
+                )
+                time.sleep(wait)
+            else:
+                raise
 
 
 def invoke_nova_json(

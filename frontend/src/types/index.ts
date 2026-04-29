@@ -8,6 +8,8 @@ export interface Transcript {
   fileName: string;
   s3Key: string;
   extractedDataKey: string;
+  flagCount?: number;
+  riskLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
 }
 
 export type TranscriptStatus =
@@ -16,6 +18,7 @@ export type TranscriptStatus =
   | 'EXTRACTED'
   | 'VERIFYING'
   | 'VERIFIED'
+  | 'COMPLETE'
   | 'REVIEW_REQUIRED'
   | 'REVIEWED'
   | 'APPROVED'
@@ -94,7 +97,6 @@ export interface ExtractedTranscript {
   gpa_info: Record<string, number>;
   total_credit_hours: number;
   enrollment_terms: string[];
-  raw_text: string;
   page_count: number;
 }
 

@@ -1,5 +1,6 @@
 from aws_cdk import (
     Stack,
+    Duration,
     RemovalPolicy,
     aws_s3 as s3,
     aws_dynamodb as dynamodb,
@@ -92,6 +93,15 @@ class StorageStack(Stack):
                 name="timestamp", type=dynamodb.AttributeType.STRING
             ),
         )
+
+        # S3 lifecycle — expire intermediate pipeline artifacts after 90 days to control costs
+        for prefix in ("extracted/", "verifications/", "reports/"):
+            self.transcript_bucket.add_lifecycle_rule(
+                id=f"expire-{prefix.rstrip('/')}",
+                prefix=prefix,
+                expiration=Duration.days(90),
+                enabled=True,
+            )
 
         # DynamoDB: Audit log (immutable trail)
         self.audit_table = dynamodb.Table(

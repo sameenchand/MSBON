@@ -1,39 +1,38 @@
-"""Lambda handler for generating verification reports via Bedrock Nova."""
+"""Lambda handler for generating the final verification report.
 
-import json
+Assembles the report directly from the verification data already stored by the
+verify Lambda — no additional Bedrock call is needed. The verify step (Nova Pro)
+already produced a full AI analysis and 18 rule results; re-calling Bedrock here
+added cost and latency with no quality benefit.
+"""
+
+import logging
 import sys
 
 sys.path.insert(0, "/opt")
 from models import AuditEntry
 import db
 import s3_utils
-from bedrock_client import invoke_nova_json, NOVA_LITE
 
-
-REPORT_SYSTEM_PROMPT = """You are a nursing board transcript verification analyst.
-Generate a clear, structured verification report in JSON format with these fields:
-- summary: A plain-language summary of the overall verification outcome.
-- findings: A list of objects, each with {ruleId, status, description, recommendation}.
-- riskAssessment: Overall risk level (LOW, MEDIUM, HIGH) with explanation.
-- recommendedAction: What the board should do next (APPROVE, REVIEW, REJECT).
-Be concise, factual, and cite specific transcript data where relevant."""
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def handler(event, context):
-    """Generate a human-readable verification report.
+    """Assemble and save the final verification report.
 
     Invoked by Step Functions with transcriptId and verificationId.
+    Sets transcript status to COMPLETE on success.
     """
-    try:
-        transcript_id = event["transcriptId"]
-        verification_id = event.get("verificationId", "")
+    transcript_id = event["transcriptId"]
+    verification_id = event.get("verificationId", "")
 
+    try:
         # Load verification results from DynamoDB
         verifications = db.get_verifications_for_transcript(transcript_id)
         if not verifications:
             raise ValueError(f"No verification results found for transcript {transcript_id}")
 
-        # Use the specific verification or the most recent one
         verification = None
         if verification_id:
             verification = next(
@@ -43,69 +42,72 @@ def handler(event, context):
         if not verification:
             verification = verifications[-1]
 
-        # Load extracted transcript data from S3
-        extracted_data = s3_utils.get_extracted_data(transcript_id)
+        # Assemble report from existing verification data — no Bedrock call.
+        # The verify Lambda (Nova Pro) already produced a full AI analysis and
+        # all rule results. We simply structure them into the report format.
+        ai_analysis = verification.get("aiAnalysis") or {}
+        rule_results = verification.get("ruleResults") or []
 
-        # Build the prompt for Nova
-        prompt = f"""Given the following transcript verification results and extracted transcript data,
-generate a comprehensive verification report.
+        flag_count = sum(1 for r in rule_results if r.get("status") == "FLAG")
+        pass_count = sum(1 for r in rule_results if r.get("status") == "PASS")
+        unable_count = sum(1 for r in rule_results if r.get("status") == "UNABLE_TO_DETERMINE")
 
-## Verification Results
-{json.dumps(verification, default=str, indent=2)}
-
-## Extracted Transcript Data
-{json.dumps(extracted_data, default=str, indent=2)}
-
-Generate the report in the specified JSON format."""
-
-        # Call Bedrock Nova Lite to generate the report
-        report = invoke_nova_json(
-            prompt=prompt,
-            system_prompt=REPORT_SYSTEM_PROMPT,
-            model_id=NOVA_LITE,
-            max_tokens=4096,
-            temperature=0.1,
-        )
-
-        # Attach metadata to the report
-        report["transcriptId"] = transcript_id
-        report["verificationId"] = verification.get("verificationId", verification_id)
+        report = {
+            "transcriptId": transcript_id,
+            "verificationId": verification.get("verificationId", verification_id),
+            "summary": ai_analysis.get("summary", ""),
+            "recommendation": ai_analysis.get("recommendation", "REVIEW"),
+            "riskLevel": verification.get("riskLevel", "MEDIUM"),
+            "overallStatus": verification.get("overallStatus", "REVIEW_REQUIRED"),
+            "findings": [
+                {
+                    "ruleId": r.get("ruleId"),
+                    "status": r.get("status"),
+                    "explanation": r.get("explanation"),
+                    "confidence": r.get("confidence"),
+                    "sourceSection": r.get("sourceSection"),
+                }
+                for r in rule_results
+            ],
+            "additionalFlags": ai_analysis.get("additionalFlags", []),
+            "reasoning": ai_analysis.get("reasoning", ""),
+            "confidenceScore": ai_analysis.get("confidenceScore", 0.0),
+            "flagCount": flag_count,
+            "passCount": pass_count,
+            "unableCount": unable_count,
+        }
 
         # Save report to S3
         report_key = s3_utils.save_report(transcript_id, report)
+        logger.info("Saved report to %s", report_key)
 
-        # Determine final status based on report
-        recommended_action = report.get("recommendedAction", "REVIEW")
-        if recommended_action == "APPROVE":
-            new_status = "VERIFIED"
-        else:
-            new_status = "REVIEW_REQUIRED"
-
-        # Update transcript status
-        db.update_transcript_status(transcript_id, new_status)
+        # Mark transcript as COMPLETE — pipeline is done
+        db.update_transcript_status(transcript_id, "COMPLETE")
 
         # Log audit entry
         audit = AuditEntry(
             transcript_id=transcript_id,
-            actor="ai",
+            actor="system",
             action="REPORT_GENERATED",
             details={
-                "verificationId": verification.get("verificationId", verification_id),
+                "verificationId": report["verificationId"],
                 "reportKey": report_key,
-                "recommendedAction": recommended_action,
-                "newStatus": new_status,
+                "recommendation": report["recommendation"],
+                "flagCount": flag_count,
+                "passCount": pass_count,
             },
         )
         db.put_audit_entry(audit.to_dynamo())
 
         return {
             "transcriptId": transcript_id,
-            "verificationId": verification.get("verificationId", verification_id),
+            "verificationId": report["verificationId"],
             "reportKey": report_key,
-            "status": new_status,
-            "recommendedAction": recommended_action,
+            "status": "COMPLETE",
+            "recommendation": report["recommendation"],
         }
 
     except Exception as e:
-        print(f"Error generating report: {e}")
+        logger.exception("Report generation failed for transcript %s: %s", transcript_id, e)
+        db.update_transcript_status(transcript_id, "REVIEW_REQUIRED")
         raise

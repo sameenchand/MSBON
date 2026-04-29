@@ -1,10 +1,13 @@
 from aws_cdk import (
     Stack,
     Duration,
+    RemovalPolicy,
     aws_stepfunctions as sfn,
     aws_stepfunctions_tasks as tasks,
     aws_lambda as _lambda,
     aws_iam as iam,
+    aws_logs as logs,
+    aws_cloudwatch as cloudwatch,
     aws_s3 as s3,
     aws_dynamodb as dynamodb,
 )
@@ -172,6 +175,14 @@ class VerificationStack(Stack):
             )
         )
 
+        workflow_log_group = logs.LogGroup(
+            self,
+            "VerificationWorkflowLogs",
+            log_group_name=f"/aws/states/msbon-verification-{env_name}",
+            retention=logs.RetentionDays.ONE_MONTH,
+            removal_policy=RemovalPolicy.DESTROY,
+        )
+
         self.state_machine = sfn.StateMachine(
             self,
             "VerificationWorkflow",
@@ -179,4 +190,41 @@ class VerificationStack(Stack):
             definition_body=sfn.DefinitionBody.from_chainable(definition),
             timeout=Duration.minutes(10),
             state_machine_type=sfn.StateMachineType.EXPRESS,
+            logs=sfn.LogOptions(
+                destination=workflow_log_group,
+                level=sfn.LogLevel.ALL,
+                include_execution_data=True,
+            ),
+            tracing_enabled=True,
+        )
+
+        # CloudWatch alarms — Lambda error rates
+        for fn, name in [
+            (extract_fn, "Extract"),
+            (verify_fn, "Verify"),
+            (report_fn, "Report"),
+        ]:
+            cloudwatch.Alarm(
+                self,
+                f"{name}LambdaErrorAlarm",
+                alarm_name=f"msbon-{name.lower()}-errors-{env_name}",
+                alarm_description=f"MSBON {name} Lambda error rate elevated",
+                metric=fn.metric_errors(period=Duration.minutes(5)),
+                threshold=3,
+                evaluation_periods=1,
+                comparison_operator=cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+                treat_missing_data=cloudwatch.TreatMissingData.NOT_BREACHING,
+            )
+
+        # CloudWatch alarm — Step Functions execution failures
+        cloudwatch.Alarm(
+            self,
+            "WorkflowFailureAlarm",
+            alarm_name=f"msbon-workflow-failures-{env_name}",
+            alarm_description="MSBON verification workflow execution failures",
+            metric=self.state_machine.metric_failed(period=Duration.minutes(5)),
+            threshold=2,
+            evaluation_periods=1,
+            comparison_operator=cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+            treat_missing_data=cloudwatch.TreatMissingData.NOT_BREACHING,
         )

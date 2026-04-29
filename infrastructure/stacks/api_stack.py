@@ -64,10 +64,10 @@ class ApiStack(Stack):
 
         textract_policy = iam.PolicyStatement(
             actions=[
-                "textract:AnalyzeDocument",
+                "textract:StartDocumentAnalysis",
+                "textract:GetDocumentAnalysis",
                 "textract:DetectDocumentText",
-                "textract:StartDocumentTextDetection",
-                "textract:GetDocumentTextDetection",
+                "textract:AnalyzeDocument",
             ],
             resources=["*"],
         )
@@ -216,6 +216,13 @@ class ApiStack(Stack):
             path="/audit/{transcriptId}",
             methods=[apigwv2.HttpMethod.GET],
             integration=HttpLambdaIntegration("GetAuditIntegration", audit_fn, payload_format_version=v1),
+        )
+
+        # Throttle the default stage: 100 req/s sustained, burst up to 50
+        cfn_stage = self.api.default_stage.node.default_child  # type: ignore[union-attr]
+        cfn_stage.default_route_settings = apigwv2.CfnStage.RouteSettingsProperty(
+            throttling_burst_limit=50,
+            throttling_rate_limit=100,
         )
 
         CfnOutput(self, "ApiUrl", value=self.api.url or "", description="API Gateway HTTP URL")

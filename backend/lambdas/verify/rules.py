@@ -11,6 +11,7 @@ Each rule function takes an extracted_data dict and returns:
 }
 """
 
+import difflib
 import json
 import os
 import re
@@ -587,6 +588,18 @@ def check_school_accredited(extracted_data: dict) -> dict:
                 "school_name",
                 "HIGH",
             )
+
+    # Fuzzy match — catches typos and abbreviations (e.g. "Hinds Comm College")
+    all_known = APPROVED_SCHOOL_NAMES + APPROVED_SCHOOL_ALIASES
+    matches = difflib.get_close_matches(normalized, all_known, n=1, cutoff=0.75)
+    if matches:
+        return _result(
+            "SCHOOL_ACCREDITED",
+            "PASS",
+            f"School '{school_name}' closely matches approved school '{matches[0]}' (fuzzy match — confirm manually if in doubt).",
+            "school_name",
+            "MEDIUM",
+        )
 
     return _result(
         "SCHOOL_ACCREDITED",
