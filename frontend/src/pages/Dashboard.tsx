@@ -116,46 +116,46 @@ export default function Dashboard() {
           )}
         </div>
       ) : (
-        <div className="bg-white rounded-lg border overflow-hidden">
-          <table className="w-full">
+        <div className="bg-white rounded-lg border overflow-hidden overflow-x-auto">
+          <table className="w-full min-w-[480px]">
             <thead className="bg-gray-50 border-b">
               <tr>
                 <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">File</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">School</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Program</th>
+                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600 hidden sm:table-cell">School</th>
+                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600 hidden md:table-cell">Program</th>
                 <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Status</th>
                 <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Flags</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Uploaded</th>
+                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600 hidden lg:table-cell">Uploaded</th>
                 <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {filtered.map((t) => (
                 <tr key={t.transcriptId} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm">{t.fileName || 'Unknown'}</td>
-                  <td className="px-4 py-3 text-sm">{t.schoolName || '-'}</td>
-                  <td className="px-4 py-3 text-sm">{t.programType || '-'}</td>
+                  <td className="px-4 py-3 text-sm max-w-[140px] truncate" title={t.fileName}>{t.fileName || 'Unknown'}</td>
+                  <td className="px-4 py-3 text-sm hidden sm:table-cell">{t.schoolName || '-'}</td>
+                  <td className="px-4 py-3 text-sm hidden md:table-cell">{t.programType || '-'}</td>
                   <td className="px-4 py-3">
                     <StatusBadge status={t.status} />
                   </td>
                   <td className="px-4 py-3 text-sm">
                     {t.flagCount != null ? (
                       <span className={`font-medium ${t.flagCount > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                        {t.flagCount > 0 ? `${t.flagCount} flag${t.flagCount !== 1 ? 's' : ''}` : 'None'}
+                        {t.flagCount > 0 ? `${t.flagCount}` : '—'}
                       </span>
                     ) : (
                       <span className="text-gray-400">-</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-500">
+                  <td className="px-4 py-3 text-sm text-gray-500 hidden lg:table-cell">
                     {new Date(t.uploadDate).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
                       to={`/transcript/${t.transcriptId}`}
-                      className="text-sm text-msbon-600 hover:text-msbon-800 font-medium"
+                      className="text-sm text-msbon-600 hover:text-msbon-800 font-medium whitespace-nowrap"
                     >
-                      View Details
+                      View →
                     </Link>
                   </td>
                 </tr>

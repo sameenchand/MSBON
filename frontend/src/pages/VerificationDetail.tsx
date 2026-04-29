@@ -117,22 +117,22 @@ export default function VerificationDetail() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+        <div className="min-w-0">
           <Link to="/dashboard" className="text-sm text-msbon-600 hover:text-msbon-800 mb-1 inline-block">
             &larr; Back to Dashboard
           </Link>
-          <h2 className="text-2xl font-bold text-gray-900">{transcript.fileName}</h2>
-          <div className="flex items-center gap-3 mt-2">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 break-words">{transcript.fileName}</h2>
+          <div className="flex flex-wrap items-center gap-2 mt-2">
             <StatusBadge status={transcript.status} />
             {verification && <RiskBadge level={verification.riskLevel} />}
             {verification && <StatusBadge status={verification.overallStatus} />}
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 sm:flex-shrink-0">
           <Link
             to={`/transcript/${id}/review`}
-            className="px-4 py-2 bg-msbon-600 text-white rounded-lg hover:bg-msbon-700"
+            className="px-4 py-2 bg-msbon-600 text-white rounded-lg hover:bg-msbon-700 text-sm font-medium"
           >
             Start Review
           </Link>
@@ -140,14 +140,14 @@ export default function VerificationDetail() {
             <button
               onClick={handleRerun}
               disabled={rerunning}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 text-sm font-medium"
             >
-              {rerunning ? 'Starting…' : 'Re-run Verification'}
+              {rerunning ? 'Starting…' : 'Re-run'}
             </button>
           )}
           <Link
             to={`/transcript/${id}/audit`}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium"
           >
             Audit Log
           </Link>
