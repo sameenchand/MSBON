@@ -17,7 +17,7 @@ const steps = [
     number: '02',
     title: 'AI Extraction & Verification',
     description:
-      'Amazon Textract runs OCR. Nova Lite structures courses, GPA, and dates. 13 deterministic rules fire. Nova Pro performs holistic fraud analysis.',
+      'Amazon Textract runs OCR. Nova Pro structures courses, GPA, and dates. 18 deterministic rules fire. Nova Pro performs holistic fraud analysis.',
     icon: (
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -89,7 +89,7 @@ const ruleCategories = [
 
 const techStack = [
   { name: 'Amazon Textract', desc: 'Async OCR' },
-  { name: 'Bedrock Nova Lite', desc: 'Structured extraction' },
+  { name: 'Bedrock Nova Pro', desc: 'Extraction + analysis' },
   { name: 'Bedrock Nova Pro', desc: 'Holistic AI analysis' },
   { name: 'AWS Step Functions', desc: 'Pipeline orchestration' },
   { name: 'Amazon DynamoDB', desc: 'Verification records' },
@@ -122,7 +122,7 @@ export default function Home() {
 
             <p className="text-lg text-blue-100 mb-10 max-w-2xl leading-relaxed">
               The Mississippi State Board of Nursing reviews hundreds of transcripts
-              manually every year. This system uses Amazon Bedrock and 13 deterministic
+              manually every year. This system uses Amazon Bedrock and 18 deterministic
               rules to flag anomalies, detect fraud indicators, and produce auditable
               findings — so staff can focus on the decisions that matter.
             </p>
@@ -230,7 +230,7 @@ export default function Home() {
 
           {/* pipeline detail strip */}
           <div className="mt-10 bg-msbon-900 rounded-xl p-5 flex flex-wrap justify-center gap-3 text-sm">
-            {['PDF Upload → S3', 'Textract OCR', 'Nova Lite Extraction', '13 Rule Checks', 'Nova Pro Analysis', 'Report Generated', 'Staff Review'].map((label, i, arr) => (
+            {['PDF Upload → S3', 'Textract OCR', 'Nova Pro Extraction', '18 Rule Checks', 'Nova Pro Analysis', 'Report Generated', 'Staff Review'].map((label, i, arr) => (
               <div key={label} className="flex items-center gap-3">
                 <span className="text-blue-200 font-medium">{label}</span>
                 {i < arr.length - 1 && <span className="text-msbon-600 font-bold">→</span>}
@@ -243,7 +243,7 @@ export default function Home() {
       {/* ── WHAT THE AI CHECKS ── */}
       <section className="max-w-7xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">13 Verification Rules, 4 Categories</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">18 Verification Rules, 4 Categories</h2>
           <p className="text-gray-500 max-w-xl mx-auto">
             Every transcript is evaluated against the same deterministic ruleset before AI analysis begins.
             Nothing is skipped. Everything is explained.

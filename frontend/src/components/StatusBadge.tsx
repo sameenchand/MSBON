@@ -9,6 +9,7 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   VERIFYING: { label: 'Verifying…', color: 'bg-yellow-100 text-yellow-700' },
   REPORTING: { label: 'Generating Report…', color: 'bg-yellow-100 text-yellow-700' },
   VERIFIED: { label: 'Verified', color: 'bg-green-100 text-green-700' },
+  COMPLETE: { label: 'Complete', color: 'bg-green-100 text-green-800' },
   REVIEW_REQUIRED: { label: 'Review Required', color: 'bg-red-100 text-red-700' },
   REVIEWED: { label: 'Reviewed', color: 'bg-purple-100 text-purple-700' },
   APPROVED: { label: 'Approved', color: 'bg-green-100 text-green-800' },
