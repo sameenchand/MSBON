@@ -63,7 +63,8 @@ export const api = {
     }),
 
   getReviews: (transcriptId: string) =>
-    request<ReviewAction[]>(`/reviews/${transcriptId}`),
+    request<{ transcriptId: string; reviews: ReviewAction[] }>(`/reviews/${transcriptId}`)
+      .then((r) => r.reviews ?? []),
 
   // Audit
   getAuditLog: (transcriptId: string) =>
