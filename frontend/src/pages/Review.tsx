@@ -31,7 +31,7 @@ function RiskMeter({ level }: { level: string }) {
   const pct = level === 'HIGH' ? 85 : level === 'MEDIUM' ? 50 : 15;
   const color = level === 'HIGH' ? 'bg-red-500' : level === 'MEDIUM' ? 'bg-amber-400' : 'bg-green-500';
   return (
-    <div className="w-full bg-gray-100 rounded-full h-2">
+    <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
       <div className={`${color} h-2 rounded-full transition-all`} style={{ width: `${pct}%` }} />
     </div>
   );
@@ -136,7 +136,6 @@ export default function Review() {
   const passed        = effectiveResults.filter((r) => r.status === 'PASS');
   const undetermined  = effectiveResults.filter((r) => r.status === 'UNABLE_TO_DETERMINE');
   const total = effectiveResults.length;
-  const activeRuleData = activeRule ? effectiveResults.find((r) => r.ruleId === activeRule) : null;
 
   return (
     <div>
@@ -149,8 +148,8 @@ export default function Review() {
             </svg>
             Back to Analysis
           </Link>
-          <h2 className="text-2xl font-bold text-gray-900 mt-1">Review Workspace</h2>
-          {transcript && <p className="text-sm text-gray-500 mt-0.5">{transcript.fileName}</p>}
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">Review Workspace</h2>
+          {transcript && <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{transcript.fileName}</p>}
         </div>
         {verification && (
           <div className="flex items-center gap-2">
@@ -161,7 +160,7 @@ export default function Review() {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center gap-2">
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-400 flex items-center gap-2">
           <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
           </svg>
@@ -169,7 +168,7 @@ export default function Review() {
         </div>
       )}
       {success && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700 flex items-center gap-2">
+        <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-sm text-green-700 dark:text-green-400 flex items-center gap-2">
           <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
           </svg>
@@ -194,8 +193,8 @@ export default function Review() {
                 { label: 'Uploaded', value: transcript ? new Date(transcript.uploadDate).toLocaleDateString('en-US', { timeZone: 'America/Chicago' }) : '—' },
               ].map(({ label, value }) => (
                 <div key={label} className="flex justify-between gap-2 text-sm">
-                  <span className="text-gray-500 flex-shrink-0">{label}</span>
-                  <span className="font-medium text-gray-900 text-right truncate">{value}</span>
+                  <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">{label}</span>
+                  <span className="font-medium text-gray-900 dark:text-white text-right truncate">{value}</span>
                 </div>
               ))}
             </div>
@@ -205,22 +204,22 @@ export default function Review() {
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
             <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Risk Overview</p>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Risk Level</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Risk Level</span>
               <RiskBadge level={verification?.riskLevel || 'MEDIUM'} />
             </div>
             <RiskMeter level={verification?.riskLevel || 'MEDIUM'} />
             <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-              <div className="bg-red-50 rounded-lg p-2">
-                <div className="text-xl font-bold text-red-600">{flagged.length}</div>
-                <div className="text-xs text-red-500">Flagged</div>
+              <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-2">
+                <div className="text-xl font-bold text-red-600 dark:text-red-400">{flagged.length}</div>
+                <div className="text-xs text-red-500 dark:text-red-400">Flagged</div>
               </div>
-              <div className="bg-green-50 rounded-lg p-2">
-                <div className="text-xl font-bold text-green-600">{passed.length}</div>
-                <div className="text-xs text-green-500">Passed</div>
+              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-2">
+                <div className="text-xl font-bold text-green-600 dark:text-green-400">{passed.length}</div>
+                <div className="text-xs text-green-500 dark:text-green-400">Passed</div>
               </div>
-              <div className="bg-yellow-50 rounded-lg p-2">
-                <div className="text-xl font-bold text-yellow-600">{undetermined.length}</div>
-                <div className="text-xs text-yellow-500">Unknown</div>
+              <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-2">
+                <div className="text-xl font-bold text-amber-600 dark:text-amber-400">{undetermined.length}</div>
+                <div className="text-xs text-amber-500 dark:text-amber-400">Unknown</div>
               </div>
             </div>
           </div>
@@ -230,42 +229,52 @@ export default function Review() {
             <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">
               {total} Verification Checks
             </p>
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {effectiveResults.map((r) => {
                 const originalStatus = verification?.ruleResults.find((orig) => orig.ruleId === r.ruleId)?.status;
                 const isOverridden = r.status !== originalStatus;
+                const isActive = activeRule === r.ruleId;
                 return (
-                  <button
-                    key={r.ruleId}
-                    onClick={() => setActiveRule(activeRule === r.ruleId ? null : r.ruleId)}
-                    className={`w-full flex items-start gap-2 px-2 py-1.5 rounded-lg text-left transition-colors text-xs hover:bg-gray-50 ${activeRule === r.ruleId ? 'bg-msbon-50 ring-1 ring-msbon-200' : ''}`}
-                  >
-                    <RuleStatusDot status={r.status} />
-                    <span className={`flex-1 leading-tight ${r.status === 'FLAG' ? 'font-medium text-gray-900' : 'text-gray-600'}`}>
-                      {formatRuleId(r.ruleId)}
-                    </span>
-                    {isOverridden && (
-                      <span className="text-[10px] bg-amber-100 text-amber-700 px-1 rounded">overridden</span>
+                  <div key={r.ruleId}>
+                    <button
+                      onClick={() => setActiveRule(isActive ? null : r.ruleId)}
+                      className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-colors text-xs ${
+                        isActive
+                          ? 'bg-msbon-50 dark:bg-msbon-900/20 text-msbon-700 dark:text-msbon-300'
+                          : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                      }`}
+                    >
+                      <RuleStatusDot status={r.status} />
+                      <span className={`flex-1 leading-tight ${
+                        r.status === 'FLAG' ? 'font-medium text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'
+                      }`}>
+                        {formatRuleId(r.ruleId)}
+                      </span>
+                      {isOverridden && (
+                        <span className="text-[10px] bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1 rounded">overridden</span>
+                      )}
+                      <svg className={`w-3 h-3 text-gray-400 dark:text-gray-600 flex-shrink-0 transition-transform duration-150 ${isActive ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {isActive && (
+                      <div className={`mx-2 mt-0.5 mb-1 p-2.5 rounded-lg border text-xs ${
+                        r.status === 'FLAG'
+                          ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                          : r.status === 'PASS'
+                          ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                          : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
+                      }`}>
+                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{r.explanation}</p>
+                        {r.sourceSection && (
+                          <p className="mt-1.5 text-gray-500 dark:text-gray-400">Source: <span className="font-medium">{r.sourceSection}</span></p>
+                        )}
+                      </div>
                     )}
-                  </button>
+                  </div>
                 );
               })}
             </div>
-
-            {/* Expanded rule detail */}
-            {activeRuleData && (
-              <div className={`mt-3 p-3 rounded-lg border text-xs ${
-                activeRuleData.status === 'FLAG' ? 'bg-red-50 border-red-200' :
-                activeRuleData.status === 'PASS' ? 'bg-green-50 border-green-200' :
-                'bg-yellow-50 border-yellow-200'
-              }`}>
-                <p className="font-medium text-gray-900 mb-1">{formatRuleId(activeRuleData.ruleId)}</p>
-                <p className="text-gray-700 leading-relaxed">{activeRuleData.explanation}</p>
-                {activeRuleData.sourceSection && (
-                  <p className="mt-1.5 text-gray-500">Source: <span className="font-medium">{activeRuleData.sourceSection}</span></p>
-                )}
-              </div>
-            )}
           </div>
         </div>
 
