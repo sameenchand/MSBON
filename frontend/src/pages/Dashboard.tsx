@@ -8,14 +8,15 @@ const PROCESSING = new Set(['UPLOADED', 'EXTRACTING', 'VERIFYING', 'REPORTING'])
 const COMPLETE   = new Set(['COMPLETE']);
 const REVIEWED   = new Set(['REVIEWED', 'APPROVED']);
 
-type FilterTab = 'all' | 'processing' | 'flagged' | 'complete' | 'reviewed';
+type FilterTab = 'all' | 'processing' | 'flagged' | 'not_reviewed' | 'complete' | 'reviewed';
 
 const FILTER_TABS: { key: FilterTab; label: string }[] = [
-  { key: 'all',        label: 'All' },
-  { key: 'processing', label: 'Processing' },
-  { key: 'flagged',    label: 'Flagged' },
-  { key: 'complete',   label: 'Complete' },
-  { key: 'reviewed',   label: 'Reviewed' },
+  { key: 'all',          label: 'All' },
+  { key: 'processing',   label: 'Processing' },
+  { key: 'flagged',      label: 'Flagged' },
+  { key: 'not_reviewed', label: 'Not Reviewed' },
+  { key: 'complete',     label: 'Complete' },
+  { key: 'reviewed',     label: 'Reviewed' },
 ];
 
 export default function Dashboard() {
@@ -49,18 +50,20 @@ export default function Dashboard() {
     switch (activeFilter) {
       case 'processing': return transcripts.filter((t) => PROCESSING.has(t.status));
       case 'flagged':    return transcripts.filter((t) => (t.flagCount ?? 0) > 0 || t.status === 'REVIEW_REQUIRED');
-      case 'complete':   return transcripts.filter((t) => COMPLETE.has(t.status));
-      case 'reviewed':   return transcripts.filter((t) => REVIEWED.has(t.status));
+      case 'not_reviewed': return transcripts.filter((t) => COMPLETE.has(t.status));
+      case 'complete':     return transcripts.filter((t) => COMPLETE.has(t.status) || REVIEWED.has(t.status));
+      case 'reviewed':     return transcripts.filter((t) => REVIEWED.has(t.status));
       default:           return transcripts;
     }
   }, [transcripts, activeFilter]);
 
   const counts = useMemo(() => ({
     all:        transcripts.length,
-    processing: transcripts.filter((t) => PROCESSING.has(t.status)).length,
-    flagged:    transcripts.filter((t) => (t.flagCount ?? 0) > 0 || t.status === 'REVIEW_REQUIRED').length,
-    complete:   transcripts.filter((t) => COMPLETE.has(t.status)).length,
-    reviewed:   transcripts.filter((t) => REVIEWED.has(t.status)).length,
+    processing:   transcripts.filter((t) => PROCESSING.has(t.status)).length,
+    flagged:      transcripts.filter((t) => (t.flagCount ?? 0) > 0 || t.status === 'REVIEW_REQUIRED').length,
+    not_reviewed: transcripts.filter((t) => COMPLETE.has(t.status)).length,
+    complete:     transcripts.filter((t) => COMPLETE.has(t.status) || REVIEWED.has(t.status)).length,
+    reviewed:     transcripts.filter((t) => REVIEWED.has(t.status)).length,
   }), [transcripts]);
 
   if (loading) {
