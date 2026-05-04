@@ -111,6 +111,15 @@ export default function Review() {
     return Object.fromEntries(latest.overrides.map((ov) => [ov.ruleId, ov.newStatus]));
   }, [reviews]);
 
+  // Effective rule results: committed overrides > pending local overrides > original AI status
+  // Must be before any early returns to satisfy Rules of Hooks
+  const effectiveResults: RuleResult[] = useMemo(() => (
+    verification?.ruleResults.map((r) => ({
+      ...r,
+      status: (committedOverrides[r.ruleId] ?? overrides[r.ruleId] ?? r.status) as RuleResult['status'],
+    })) ?? []
+  ), [verification, committedOverrides, overrides]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -121,14 +130,6 @@ export default function Review() {
       </div>
     );
   }
-
-  // Effective rule results: committed overrides > pending local overrides > original AI status
-  const effectiveResults: RuleResult[] = useMemo(() => (
-    verification?.ruleResults.map((r) => ({
-      ...r,
-      status: (committedOverrides[r.ruleId] ?? overrides[r.ruleId] ?? r.status) as RuleResult['status'],
-    })) ?? []
-  ), [verification, committedOverrides, overrides]);
 
   const flagged       = effectiveResults.filter((r) => r.status === 'FLAG');
   const passed        = effectiveResults.filter((r) => r.status === 'PASS');
