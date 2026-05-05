@@ -23,9 +23,10 @@ The MSBON Transcript Verification system is a serverless AWS application built w
 └──┬───────────┬──────────┬───────┘
    │           │          │
    ▼           ▼          ▼
-Textract    Bedrock     Bedrock
-(async)    Nova Pro     Nova Lite
-(extract)  (verify)     (report)
+Textract    Bedrock    Assemble
+(async)    Nova Pro    & Save
++ Nova Pro  (verify)   (no AI)
+(extract)
 ```
 
 ## Components
@@ -44,10 +45,14 @@ Textract    Bedrock     Bedrock
 - Routes:
   - `POST /transcripts` — create transcript record, return presigned S3 upload URL
   - `GET /transcripts` — list all transcripts
-  - `GET /transcripts/{id}` — get transcript with verification results
+  - `GET /transcripts/{id}` — get single transcript metadata
+  - `GET /transcripts/{id}/extracted` — get structured extraction JSON
+  - `GET /transcripts/{id}/pdf` — get presigned URL for the original PDF
   - `POST /transcripts/{id}/verify` — trigger Step Functions pipeline
+  - `GET /verifications/{id}` — get verification results for a transcript
   - `POST /reviews` — submit human review decision
-  - `GET /transcripts/{id}/audit` — retrieve audit log entries
+  - `GET /reviews/{id}` — get all review actions for a transcript
+  - `GET /audit/{id}` — retrieve audit log entries for a transcript
 
 ### Upload Lambda
 
@@ -85,15 +90,19 @@ Orchestrates three Lambda functions in sequence:
 
 ### Report Lambda
 
-- Assembles a final verification report combining rule results and AI analysis
+- Assembles a final verification report combining rule results and AI analysis (no additional AI calls)
 - Saves report JSON to S3
 - Updates transcript status to `COMPLETE`
 
 ### Review Lambda
 
-- Handles `POST /reviews`: records human reviewer decisions (approve, flag, request-info, override)
-- Stores review records in DynamoDB with reviewer ID and timestamp
+- Handles `POST /reviews`: records human reviewer decisions
+  - `CONFIRM` — staff agrees with AI findings; transcript marked `REVIEWED`
+  - `OVERRIDE` — staff overrides one or more rule results; saves per-rule changes, updates `flagCount` and `undeterminedCount` on the transcript record, marks `REVIEWED`
+  - `ANNOTATE` — saves reviewer notes without changing the overall status
+- Stores review records in DynamoDB with reviewer ID, timestamp, overrides, and annotations
 - Writes audit entry for every review action
+- Handles `GET /reviews/{id}`: returns all review actions for a transcript
 
 ### Audit Lambda
 
@@ -160,8 +169,9 @@ Each rule returns: `ruleId`, `status` (PASS / FLAG / UNABLE_TO_DETERMINE), `expl
 
 | Model | Use | Reason |
 |-------|-----|--------|
-| Nova Pro | Structured data extraction, holistic fraud analysis | High accuracy required — extraction errors propagate through all 18 rules |
-| Nova Lite | Verification report generation | Fast and cost-effective for structured JSON assembly |
+| Nova Pro | Structured data extraction (extract step) | Accuracy is critical — extraction errors propagate through all 18 rules |
+| Nova Pro | Holistic fraud analysis (verify step) | Complex reasoning across the full transcript required |
+| — | Report generation | No AI call; assembles from already-computed rule results and analysis |
 
 All AI outputs include source citations and plain-language explanations. No AI output results in an automated decision.
 
@@ -182,12 +192,12 @@ All AI outputs include source citations and plain-language explanations. No AI o
    c. Calls Nova Pro for holistic analysis
    d. Saves verification result to DynamoDB + S3
 7. Report Lambda:
-   a. Assembles final report
+   a. Assembles final report from existing rule results + AI analysis (no additional AI calls)
    b. Saves to S3
-   c. Updates transcript status → COMPLETE
-8. Staff reviews findings in the UI
-9. Staff submits decision → Review Lambda records it
-10. All actions logged to Audit table
+   c. Updates transcript status → COMPLETE (shown as "Pending Review" in the UI)
+8. Staff reviews findings in the UI — flags, undetermined, passed, AI narrative summary
+9. Staff submits decision (CONFIRM / OVERRIDE / ANNOTATE) → Review Lambda records it, status → REVIEWED
+10. All actions logged to Audit table (immutable, newest-first in UI)
 ```
 
 ## Security Notes (PoC Scope)

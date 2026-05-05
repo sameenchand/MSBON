@@ -14,13 +14,13 @@ Open **http://localhost:3000**.
 
 The mock server pre-loads five sample transcripts:
 
-| Scenario | Status | Description |
-|----------|--------|-------------|
-| Clean transcript | COMPLETE | All 18 rules pass, no flags |
-| Flagged transcript | REVIEW_REQUIRED | Missing required courses flagged |
-| High-risk transcript | REVIEW_REQUIRED | Multiple fraud indicators flagged |
-| Approved transcript | APPROVED | Human reviewer approved |
-| In-progress transcript | EXTRACTING | Pipeline still running |
+| Scenario | Status | UI Label | Description |
+|----------|--------|----------|-------------|
+| Clean transcript | COMPLETE | Pending Review | All 18 rules pass, no flags |
+| Flagged transcript | REVIEW_REQUIRED | Review Required | Missing required courses flagged |
+| High-risk transcript | REVIEW_REQUIRED | Review Required | Multiple fraud indicators flagged |
+| Approved transcript | APPROVED | Approved | Human reviewer approved |
+| In-progress transcript | EXTRACTING | Extracting… | Pipeline still running |
 
 ### UI Scenarios to Verify
 
@@ -29,7 +29,7 @@ The mock server pre-loads five sample transcripts:
 - [ ] Verification Detail shows rule results (PASS/FLAG/UNABLE_TO_DETERMINE) with explanations
 - [ ] AI analysis summary is displayed
 - [ ] "Start Review" button navigates to the Review page
-- [ ] Review page allows submitting a decision (approve, flag, request-info, override)
+- [ ] Review page allows submitting a decision (Agree with AI Findings, Submit Overrides, Save Notes Only)
 - [ ] Audit Log page loads and shows all events for a transcript
 - [ ] Upload page accepts a PDF file
 - [ ] Clicking the header logo/title navigates to the dashboard
@@ -60,7 +60,7 @@ These steps validate the full pipeline against a deployed AWS environment.
 - Navigate to the Upload page
 - Select a multi-page nursing transcript PDF
 - Submit the upload
-- Confirm the dashboard shows the transcript with status `UPLOADING` → `EXTRACTING` → `VERIFYING` → `REVIEW_REQUIRED`
+- Confirm the dashboard shows the transcript with status `UPLOADED` → `EXTRACTING` → `VERIFYING` → `REPORTING` → `COMPLETE` (displayed as "Pending Review")
 
 **2. Verify extraction results**
 - Open the Verification Detail page for the uploaded transcript
@@ -78,13 +78,19 @@ These steps validate the full pipeline against a deployed AWS environment.
 
 **5. Human review flow**
 - Click "Start Review"
-- Submit an "Approve" or "Flag" decision with a comment
-- Confirm the transcript status updates in the dashboard
+- In the Review workspace, choose one of:
+  - **Agree with AI Findings** (CONFIRM) — accepts all AI results as-is
+  - **Submit Overrides** (OVERRIDE) — changes the status of one or more rules via the dropdowns; enter a justification in Reviewer Notes
+  - **Save Notes Only** (ANNOTATE) — saves a comment without changing findings
+- Confirm the transcript status updates to "Reviewed" in the dashboard
+- Confirm flag/undetermined counts in the dashboard reflect any overrides
 - Confirm the decision appears in the audit log
 
 **6. Audit log**
 - Open the Audit Log for the transcript
 - Confirm entries exist for: upload, extraction complete, verification complete, human review
+- Entries are displayed newest-first
+- Expand "View details" on any entry to see human-readable key-value pairs (not raw JSON)
 
 ### Failure Scenarios to Test
 

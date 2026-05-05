@@ -20,8 +20,9 @@ When deployed in a test environment, the system is designed to process only:
 
 The `backend/rules/` directory contains reference data used by the verification rule engine:
 
-- `approved_schools.json` — A list of nursing programs considered for accreditation checks. This list is representative and not exhaustive. It is based on publicly available information about accredited nursing programs and does not contain PII.
-- `required_courses.json` — Minimum required nursing course categories by program type (ADN, BSN, MSN, LPN), based on general nursing education standards.
+- `approved_schools.json` — Mississippi nursing programs approved for accreditation checks, with aliases, city, program types (LPN/ADN/BSN/MSN/DNP), and accreditation body (ACEN/CCNE). Representative and not exhaustive; does not contain PII.
+- `ms_nursing_requirements.json` — Minimum credit hours, GPA thresholds, and required course categories by program type (LPN, ADN, BSN, MSN, DNP), based on Mississippi nursing education standards.
+- `accreditation_list.json` — Recognized accreditation bodies and their abbreviations used in the accreditation rule check.
 - `fraud_indicators.json` — Patterns associated with transcript anomalies, based on publicly reported information about nursing credential fraud cases (e.g., Operation Nightingale).
 
 This reference data is illustrative for PoC purposes and should not be treated as authoritative for production licensing decisions.
