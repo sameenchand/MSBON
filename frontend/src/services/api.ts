@@ -56,7 +56,7 @@ export const api = {
     request<Verification[]>(`/verifications/${transcriptId}`),
 
   // Reviews
-  createReview: (review: Omit<ReviewAction, 'reviewId' | 'timestamp'>) =>
+  createReview: (review: Omit<ReviewAction, 'reviewId' | 'timestamp'> & { flagCount?: number; undeterminedCount?: number }) =>
     request<ReviewAction>('/reviews', {
       method: 'POST',
       body: JSON.stringify(review),

@@ -64,7 +64,13 @@ def _handle_create_review(body: dict) -> dict:
     if action_upper == "CONFIRM":
         db.update_transcript_status(transcript_id, "REVIEWED")
     elif action_upper == "OVERRIDE":
-        db.update_transcript_status(transcript_id, "REVIEWED")
+        # Update flag/undetermined counts to reflect staff overrides
+        extra = {}
+        if body.get("flagCount") is not None:
+            extra["flagCount"] = int(body["flagCount"])
+        if body.get("undeterminedCount") is not None:
+            extra["undeterminedCount"] = int(body["undeterminedCount"])
+        db.update_transcript_status(transcript_id, "REVIEWED", **extra)
 
     return _response(201, {
         "reviewId": review.review_id,

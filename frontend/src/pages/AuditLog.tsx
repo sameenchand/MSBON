@@ -80,7 +80,7 @@ export default function AuditLog() {
           <div className="absolute left-[18px] top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-700" />
 
           <div className="space-y-3">
-            {entries.map((entry, i) => {
+            {[...entries].reverse().map((entry, i) => {
               const timestamp = entry.timestampEvent.split('#')[0];
               const actor = entry.actor?.toLowerCase() || 'system';
               const cfg = ACTOR_CONFIG[actor] || ACTOR_CONFIG.system;
@@ -138,9 +138,27 @@ export default function AuditLog() {
                         <summary className="text-xs text-gray-400 dark:text-gray-500 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 select-none">
                           View details
                         </summary>
-                        <pre className="text-xs text-gray-600 dark:text-gray-400 mt-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3 rounded-lg overflow-x-auto">
-                          {JSON.stringify(entry.details, null, 2)}
-                        </pre>
+                        <div className="mt-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 space-y-1.5">
+                          {Object.entries(entry.details).map(([key, val]) => {
+                            const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase());
+                            let display: string;
+                            if (Array.isArray(val)) {
+                              display = val.length === 0 ? 'None' : `${val.length} item${val.length !== 1 ? 's' : ''}`;
+                            } else if (val === null || val === undefined || val === '') {
+                              display = '—';
+                            } else if (typeof val === 'object') {
+                              display = JSON.stringify(val);
+                            } else {
+                              display = String(val);
+                            }
+                            return (
+                              <div key={key} className="flex gap-2 text-xs">
+                                <span className="text-gray-400 dark:text-gray-500 flex-shrink-0 w-28 truncate">{label}</span>
+                                <span className="text-gray-700 dark:text-gray-300 break-all">{display}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </details>
                     )}
                   </div>

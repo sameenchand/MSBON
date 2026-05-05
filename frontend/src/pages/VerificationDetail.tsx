@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { StatusBadge, RiskBadge } from '../components/StatusBadge';
 import FlagCard from '../components/FlagCard';
 import RuleExplanation from '../components/RuleExplanation';
-import type { Transcript, Verification } from '../types';
+import type { Transcript, Verification, ReviewAction } from '../types';
 
 const PROCESSING_STATUSES = new Set(['UPLOADED', 'EXTRACTING', 'VERIFYING', 'REPORTING']);
 
@@ -79,6 +79,7 @@ export default function VerificationDetail() {
   const { id } = useParams<{ id: string }>();
   const [transcript, setTranscript] = useState<Transcript | null>(null);
   const [verification, setVerification] = useState<Verification | null>(null);
+  const [reviews, setReviews] = useState<ReviewAction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [rerunning, setRerunning] = useState(false);
@@ -91,9 +92,11 @@ export default function VerificationDetail() {
     Promise.all([
       api.getTranscript(id),
       api.getVerification(id).catch(() => [] as Verification[]),
+      api.getReviews(id).catch(() => [] as ReviewAction[]),
     ])
-      .then(([t, verifications]) => {
+      .then(([t, verifications, revs]) => {
         setTranscript(t);
+        setReviews(revs);
         const isProcessing = PROCESSING_STATUSES.has(t.status);
         const hasResults = verifications.length > 0;
         if (hasResults) {
@@ -136,6 +139,21 @@ export default function VerificationDetail() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  // Committed overrides from the latest OVERRIDE review
+  const committedOverrides = useMemo<Record<string, string>>(() => {
+    const latestOverride = [...reviews].reverse().find((r) => r.action === 'OVERRIDE' && r.overrides?.length > 0);
+    if (!latestOverride) return {};
+    return Object.fromEntries(latestOverride.overrides.map((ov) => [ov.ruleId, ov.newStatus]));
+  }, [reviews]);
+
+  // Effective rule results with overrides applied
+  const effectiveRuleResults = useMemo(() => (
+    verification?.ruleResults.map((r) => ({
+      ...r,
+      status: (committedOverrides[r.ruleId] ?? r.status) as typeof r.status,
+    })) ?? []
+  ), [verification, committedOverrides]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -149,9 +167,10 @@ export default function VerificationDetail() {
   if (error) return <div className="text-center py-12 text-red-500">{error}</div>;
   if (!transcript) return <div className="text-center py-12 text-gray-500 dark:text-gray-400">Transcript not found.</div>;
 
-  const flagged       = verification?.ruleResults.filter((r) => r.status === 'FLAG') || [];
-  const undetermined  = verification?.ruleResults.filter((r) => r.status === 'UNABLE_TO_DETERMINE') || [];
-  const passed        = verification?.ruleResults.filter((r) => r.status === 'PASS') || [];
+  const flagged       = effectiveRuleResults.filter((r) => r.status === 'FLAG');
+  const undetermined  = effectiveRuleResults.filter((r) => r.status === 'UNABLE_TO_DETERMINE');
+  const passed        = effectiveRuleResults.filter((r) => r.status === 'PASS');
+  const hasOverrides  = Object.keys(committedOverrides).length > 0;
 
   return (
     <div>
@@ -232,6 +251,12 @@ export default function VerificationDetail() {
             <span className="text-lg font-extrabold text-green-600 dark:text-green-400">{passed.length}</span>
             <span className="text-xs font-semibold text-green-700 dark:text-green-400">Passed</span>
           </div>
+          {hasOverrides && (
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl">
+              <span className="text-lg font-extrabold text-purple-600 dark:text-purple-400">{Object.keys(committedOverrides).length}</span>
+              <span className="text-xs font-semibold text-purple-700 dark:text-purple-400">Staff Overrides</span>
+            </div>
+          )}
         </div>
       )}
 
@@ -246,7 +271,7 @@ export default function VerificationDetail() {
 
       {verification ? (
         <div className="space-y-6">
-          <RuleExplanation results={verification.ruleResults} />
+          <RuleExplanation results={effectiveRuleResults} />
 
           {/* AI Analysis */}
           {verification.aiAnalysis && (

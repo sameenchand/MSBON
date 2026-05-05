@@ -86,7 +86,16 @@ export default function Review() {
         const original = verification?.ruleResults.find((r) => r.ruleId === ruleId);
         return { ruleId, originalStatus: original?.status || '', newStatus, justification: annotations };
       });
-      await api.createReview({ transcriptId: id, reviewerId: 'staff-user', action, overrides: overrideList, annotations });
+      const effectiveFlagCount = effectiveResults.filter((r) => r.status === 'FLAG').length;
+      const effectiveUndeterminedCount = effectiveResults.filter((r) => r.status === 'UNABLE_TO_DETERMINE').length;
+      await api.createReview({
+        transcriptId: id,
+        reviewerId: 'staff-user',
+        action,
+        overrides: overrideList,
+        annotations,
+        ...(action === 'OVERRIDE' && { flagCount: effectiveFlagCount, undeterminedCount: effectiveUndeterminedCount }),
+      });
       setSuccess(`Review submitted: ${action}`);
       // Re-fetch transcript (status updates to REVIEWED) and reviews in parallel
       const [updatedTranscript, revs] = await Promise.all([
