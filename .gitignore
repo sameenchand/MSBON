@@ -42,7 +42,9 @@ frontend/build/
 .env.*.local
 
 # CDK
+cdk.out/
 infrastructure/cdk.out/
+frontend/cdk.out/
 *.js.map
 *.d.ts
 
