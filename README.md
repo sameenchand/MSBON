@@ -173,3 +173,12 @@ This repository contains code and supporting materials developed as part of a Mi
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+
+## Contributors
+
+Developed as part of the **Mississippi AI Innovation Hub** — a partnership between the Mississippi Department of Information Technology Services (MS ITS), the Mississippi Artificial Intelligence Network (MAIN), and Amazon Web Services (AWS).
+
+- **Agency Partner:** Mississippi State Board of Nursing (MSBN)
+- **Student Team / Institution:** Sameen Chand, Pramish Pandey — University of Southern Mississippi
+- **Faculty Advisor / Mentor:** Brycie Wiseman
+- **Repository:** https://github.com/sameenchand/MSBON
